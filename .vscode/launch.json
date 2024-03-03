@@ -1,0 +1,21 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "service1",
+      "type": "node",
+      "request": "attach",
+      "port": 9000,
+      "restart": true,
+      "localRoot": "${workspaceFolder}/services/service1"
+    },
+    {
+      "name": "service1-docker",
+      "type": "node",
+      "request": "attach",
+      "port": 9000,
+      "restart": true,
+      "remoteRoot": "/app"
+    }
+  ]
+}

@@ -3,15 +3,13 @@
   "private": true,
   "scripts": {
     "start": "turbo start",
-    "build": "turbo build",
+    "build": "turbo build --cache-dir=.turbo",
     "dev": "turbo dev",
     "lint": "turbo lint",
     "format": "prettier --write \"**/*.{ts,tsx,md}\""
   },
   "devDependencies": {
     "@repo/core": "*",
-    "@repo/eslint-config": "*",
-    "@repo/typescript-config": "*",
     "prettier": "^3.1.1",
     "ts-node": "^10.9.2",
     "turbo": "latest",
