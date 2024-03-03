@@ -8,91 +8,120 @@ on:
         required: true
         type: choice
         options:
-          - 'dev'
-          - 'production'
+          - "dev"
+          - "production"
 
       service:
         description: Service
         required: true
         type: choice
         options:
-          - 'all'
-          - 'service1'
-          - 'service2'
+          - "all"
+          - "service1"
+          - "service2"
 
   pull_request:
     branches: [dev, main]
     paths:
-      - 'services/**'
+      - "services/**"
 
 jobs:
-  detect-changed-files:
-    name: Detect File changes
+  build-turbo:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout
-        uses: actions/checkout@v3
+      - name: Check out code
+        uses: actions/checkout@v4
 
-      - uses: dorny/paths-filter@v2
-        if: github.event_name != 'workflow_dispatch'
-        id: changes
+      - name: Cache turbo build setup
+        uses: actions/cache@v4
         with:
-          base: ${{ github.base_ref || 'dev' }}
-          filters: |
-            service1:
-              - 'services/service1/**'
-            service2:
-              - 'services/service2/**'
+          path: .turbo
+          key: ${{ runner.os }}-turbo-${{ github.sha }}
+          restore-keys: |
+            ${{ runner.os }}-turbo-
 
-      - name: Set Output
-        id: changed-services
-        run: |
-          is_manual_run=$(echo ${{ contains(github.event_name, 'workflow_dispatch') }})
-          CHANGES=${{ toJson(steps.changes.outputs.changes) }}
+      - name: Setup Node.js environment
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: "npm"
 
-          if [ $is_manual_run == 'true' ]; then
-            input_services=${{ github.event.inputs.service }}
+      - name: Install dependencies
+        run: npm install
 
-            if [ $input_services == 'all' ]; then
-              input_services="action,admin,auth,common,export,files,forms,manager,rounding"
-            fi
+      - name: Lint services
+        run: npm lint
 
-            converted_inputs=$( jq -nc --arg input_services "$input_services" '$input_services | split(",")' )
-            CHANGES=$converted_inputs
-          fi
+      - name: Build
+        run: npm run build
 
-          echo "changes: $CHANGES"
-          echo "changed_services=${CHANGES}" >> $GITHUB_ENV
+  # detect-changed-files:
+  #   name: Detect File changes
+  #   runs-on: ubuntu-latest
+  #   steps:
+  #     - name: Checkout
+  #       uses: actions/checkout@v4
 
-    outputs:
-      services: ${{ env.changed_services }}
+  #     - uses: dorny/paths-filter@v2
+  #       if: github.event_name != 'workflow_dispatch'
+  #       id: changes
+  #       with:
+  #         base: ${{ github.base_ref || 'dev' }}
+  #         filters: |
+  #           service1:
+  #             - 'services/service1/**'
+  #           service2:
+  #             - 'services/service2/**'
 
-  build:
-    needs: [detect-changed-files]
-    runs-on: ubuntu-latest
+  #     - name: Set Output
+  #       id: changed-services
+  #       run: |
+  #         is_manual_run=$(echo ${{ contains(github.event_name, 'workflow_dispatch') }})
+  #         CHANGES=${{ toJson(steps.changes.outputs.changes) }}
 
-    strategy:
-      max-parallel: 1 # Run jobs in matrix sequentially.
-      fail-fast: false
-      matrix:
-        service: ${{ fromJson(needs.detect-changed-files.outputs.services) }}
+  #         if [ $is_manual_run == 'true' ]; then
+  #           input_services=${{ github.event.inputs.service }}
 
-    defaults:
-      run:
-        working-directory: ./services/${{ matrix.service }}
+  #           if [ $input_services == 'all' ]; then
+  #             input_services="action,admin,auth,common,export,files,forms,manager,rounding"
+  #           fi
 
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v3
+  #           converted_inputs=$( jq -nc --arg input_services "$input_services" '$input_services | split(",")' )
+  #           CHANGES=$converted_inputs
+  #         fi
 
-      - name: Use Bun
-        uses: oven-sh/setup-bun@v1
+  #         echo "changes: $CHANGES"
+  #         echo "changed_services=${CHANGES}" >> $GITHUB_ENV
 
-      - name: Install Dependencies
-        run: bun i
+  #   outputs:
+  #     services: ${{ env.changed_services }}
 
-      - name: Run Linter
-        run: bun lint
+  # build:
+  #   needs: [detect-changed-files]
+  #   runs-on: ubuntu-latest
 
-      - name: Run Build
-        run: bun run build
+  #   strategy:
+  #     max-parallel: 1 # Run jobs in matrix sequentially.
+  #     fail-fast: false
+  #     matrix:
+  #       service: ${{ fromJson(needs.detect-changed-files.outputs.services) }}
+
+  #   defaults:
+  #     run:
+  #       working-directory: ./services/${{ matrix.service }}
+
+  #   steps:
+  #     - name: Setup Node.js environment
+  #       uses: actions/setup-node@v4
+  #       with:
+  #         node-version: 20
+  #         cache: "npm"
+
+  #     - name: Install dependencies
+  #       run: npm install
+
+  #     - name: Install dependencies
+  #       run: npm run lint
+
+  #     - name: Build
+  #       run: npm run build
