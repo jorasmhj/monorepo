@@ -1,0 +1,101 @@
+name: Services - Build
+
+on:
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: Environment
+        required: true
+        type: choice
+        options:
+          - 'dev'
+          - 'production'
+
+      service:
+        description: Service
+        required: true
+        type: choice
+        options:
+          - 'all'
+          - 'service1'
+          - 'service2'
+
+  push:
+    branches: [dev, main]
+    paths:
+      - 'services/**'
+
+jobs:
+  detect-changed-files:
+    name: Detect File changes
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - uses: dorny/paths-filter@v2
+        if: github.event_name != 'workflow_dispatch'
+        id: changes
+        with:
+          base: ${{ github.base_ref || 'dev' }}
+          filters: |
+            service1:
+              - 'services/service1/**'
+            service2:
+              - 'services/service2/**'
+
+      - name: Set Output
+        id: changed-services
+        run: |
+          is_manual_run=$(echo ${{ contains(github.event_name, 'workflow_dispatch') }})
+          CHANGES=${{ toJson(steps.changes.outputs.changes) }}
+
+          if [ $is_manual_run == 'true' ]; then
+            input_services=${{ github.event.inputs.service }}
+
+            if [ $input_services == 'all' ]; then
+              input_services="action,admin,auth,common,export,files,forms,manager,rounding"
+            fi
+
+            converted_inputs=$( jq -nc --arg input_services "$input_services" '$input_services | split(",")' )
+            CHANGES=$converted_inputs
+          fi
+
+          echo "changes: $CHANGES"
+          echo "changed_services=${CHANGES}" >> $GITHUB_ENV
+
+    outputs:
+      services: ${{ env.changed_services }}
+
+  set-environment:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Set Environment
+        id: set-environment
+        run: |
+          is_manual_run=$(echo ${{ contains(github.event_name, 'workflow_dispatch') }})
+          ENVIRONMENT=""
+
+          if [ $is_manual_run == 'true' ]; then
+            input_environment=${{ github.event.inputs.environment }}
+          else
+            input_environment=${{ github.event.inputs.environment || github.ref_name }}
+          fi
+
+          ENVIRONMENT=$input_environment
+
+          echo "changes: $ENVIRONMENT"
+          echo "changed_environment=${ENVIRONMENT}" >> $GITHUB_ENV
+
+    outputs:
+      environment: ${{ env.changed_environment }}
+
+  build:
+    needs: [detect-changed-files, set-environment]
+    runs-on: ubuntu-latest
+    environment: ${{ needs.set-environment.outputs.environment }}
+
+    steps:
+      - name: Echo env
+        id: asd
+        run: echo ${{ needs.set-environment.outputs.environment }}

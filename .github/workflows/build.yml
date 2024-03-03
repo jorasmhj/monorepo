@@ -1,0 +1,98 @@
+name: Services - Build
+
+on:
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: Environment
+        required: true
+        type: choice
+        options:
+          - 'dev'
+          - 'production'
+
+      service:
+        description: Service
+        required: true
+        type: choice
+        options:
+          - 'all'
+          - 'service1'
+          - 'service2'
+
+  pull_request:
+    branches: [dev, main]
+    paths:
+      - 'services/**'
+
+jobs:
+  detect-changed-files:
+    name: Detect File changes
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - uses: dorny/paths-filter@v2
+        if: github.event_name != 'workflow_dispatch'
+        id: changes
+        with:
+          base: ${{ github.base_ref || 'dev' }}
+          filters: |
+            service1:
+              - 'services/service1/**'
+            service2:
+              - 'services/service2/**'
+
+      - name: Set Output
+        id: changed-services
+        run: |
+          is_manual_run=$(echo ${{ contains(github.event_name, 'workflow_dispatch') }})
+          CHANGES=${{ toJson(steps.changes.outputs.changes) }}
+
+          if [ $is_manual_run == 'true' ]; then
+            input_services=${{ github.event.inputs.service }}
+
+            if [ $input_services == 'all' ]; then
+              input_services="action,admin,auth,common,export,files,forms,manager,rounding"
+            fi
+
+            converted_inputs=$( jq -nc --arg input_services "$input_services" '$input_services | split(",")' )
+            CHANGES=$converted_inputs
+          fi
+
+          echo "changes: $CHANGES"
+          echo "changed_services=${CHANGES}" >> $GITHUB_ENV
+
+    outputs:
+      services: ${{ env.changed_services }}
+
+  build:
+    needs: [detect-changed-files]
+    runs-on: ubuntu-latest
+
+    strategy:
+      max-parallel: 1 # Run jobs in matrix sequentially.
+      fail-fast: false
+      matrix:
+        service: ${{ fromJson(needs.detect-changed-files.outputs.services) }}
+
+    defaults:
+      run:
+        working-directory: ./services/${{ matrix.service }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Use Bun
+        uses: oven-sh/setup-bun@v1
+
+      - name: Install Dependencies
+        run: bun i
+
+      - name: Run Linter
+        run: bun lint
+
+      - name: Run Build
+        run: bun run build
