@@ -1,4 +1,3 @@
-import { LogDto } from "../dtos";
 import { LogService } from "../services";
 import { httpResponse } from "../helpers";
 import { Request, Response } from "express";
@@ -9,6 +8,7 @@ export class LogController implements ILogController {
   constructor(logService: LogService) {
     this._logService = logService;
   }
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars, no-unused-vars
   follow(request: Request, response: Response): Promise<any> {
     throw new Error("Method not implemented.");
   }

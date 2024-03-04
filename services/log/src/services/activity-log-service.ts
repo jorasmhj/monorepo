@@ -3,7 +3,7 @@ import config from "../configs";
 import { AnyObj } from "../types";
 import { serviceRouteConstant } from "../constants";
 import { ServerError } from "../helpers/error-helper";
-import { getTimeInterval, getTimeIntervalToDate } from "../utils/date-util";
+import { getTimeIntervalToDate } from "../utils/date-util";
 
 export default class ActivityLogService {
   constructor() {}
@@ -62,7 +62,7 @@ export default class ActivityLogService {
     query["applicationName"] = config.NOVELTY_APPLICATION_NAME;
 
     if (query.interval) {
-      const { endDate, startDate } = getTimeIntervalToDate(query);
+      const { endDate, startDate } = getTimeIntervalToDate(query)!;
       query["startDate"] = startDate;
       query["endDate"] = endDate;
       delete query["interval"];

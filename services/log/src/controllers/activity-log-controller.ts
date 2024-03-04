@@ -27,6 +27,7 @@ export class ActivityLogController implements IActivityLogController {
     }
   };
 
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars, no-unused-vars
   getOne = async (request: Request, response: Response): Promise<any> => {};
 
   create = async (request: Request, response: Response): Promise<any> => {
@@ -38,6 +39,7 @@ export class ActivityLogController implements IActivityLogController {
     }
   };
 
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars, no-unused-vars
   update = async (request: Request, response: Response): Promise<any> => {};
 
   delete = async (request: Request, response: Response): Promise<any> => {

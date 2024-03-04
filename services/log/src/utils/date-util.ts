@@ -60,6 +60,8 @@ export const getTimeInterval = (params: any) => {
 
           return { endDate: end, startDate: start };
       }
+      break;
+
     case dateConstant.INTERVAL.SINCE_INCEPTION:
       return { endDate: "", startDate: "" };
 
@@ -163,6 +165,8 @@ export const getTimeIntervalToDate = (params: any) => {
 
           return { endDate: end, startDate: start };
       }
+      break;
+
     case dateConstant.INTERVAL.SINCE_INCEPTION:
       return { endDate: "", startDate: "" };
 
