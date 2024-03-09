@@ -118,4 +118,4 @@ jobs:
       - name: Build Docker Image
         run: |
           docker build -t image-${{ matrix.service }} --build-arg APP=${{ matrix.service }} --build-arg START_COMMAND=start .
-          docker ps
+          docker images
