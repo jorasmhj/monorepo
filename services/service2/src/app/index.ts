@@ -15,6 +15,7 @@ class App {
     const server = this.app.listen(this.appConfig.port, () => {
       const { port, address } = <{ address: string; port: number }>server.address();
       logger.info(`🚀🚀 Listening at http://${address}:${port} 🚀🚀`);
+      logger.info("Cool from service2 ***");
     });
   }
 }

@@ -1,0 +1,47 @@
+version: "3.8"
+
+x-defaults: &defaults
+  init: true
+  tty: true
+  networks:
+    - my_monorepo_network
+
+networks:
+  my_monorepo_network:
+
+services:
+  service1:
+    <<: *defaults
+    container_name: service1
+    ports:
+      - "4000:4000"
+      - "9000:9000"
+    command: npm run dev
+    build:
+      args:
+        APP: service1
+        START_COMMAND: dev
+      context: .
+      dockerfile: ./Dockerfile
+    volumes:
+      - ./services/service1:/app/services/service1
+      - /app/services/service1/node_modules
+
+  service2:
+    <<: *defaults
+    container_name: service2
+    ports:
+      - "4001:4001"
+      - "9001:9001"
+    command: npm run dev
+    build:
+      args:
+        APP: service2
+        START_COMMAND: dev
+      context: .
+      dockerfile: ./Dockerfile
+    depends_on:
+      - service1
+    volumes:
+      - ./services/service2:/app/services/service2
+      - /app/services/service2/node_modules
