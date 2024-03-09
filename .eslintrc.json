@@ -17,9 +17,11 @@
     "quotes": ["error", "double"],
     "func-names": "off",
     "@typescript-eslint/no-explicit-any": "off",
+    "@typescript-eslint/no-unused-vars": "warn",
     "@typescript-eslint/no-non-null-assertion": "off",
     "padding-line-between-statements": ["error", { "blankLine": "always", "prev": "function", "next": "*" }],
     "newline-before-return": "error",
+    "no-unused-vars": "warn",
     "no-console": "warn",
     "@typescript-eslint/ban-types": [
       "error",
