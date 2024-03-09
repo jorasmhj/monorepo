@@ -16,7 +16,7 @@ class App {
       const { port, address } = <{ address: string; port: number }>server.address();
       logger.info(`🚀🚀 Listening at http://${address}:${port} 🚀🚀`);
 
-      logger.info("Cool from service1 ***");
+      logger.info("Cool from service1 ****");
     });
   }
 }
