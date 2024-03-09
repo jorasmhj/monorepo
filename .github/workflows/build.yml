@@ -106,9 +106,13 @@ jobs:
       matrix:
         service: ${{ fromJson(needs.detect-changed-files.outputs.services) }}
 
+    defaults:
+      run:
+        working-directory: .
+
     steps:
       - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v1
+        uses: docker/setup-buildx-action@v3
 
       - name: Build Docker Image
         run: |
