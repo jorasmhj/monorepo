@@ -67,6 +67,7 @@ jobs:
 
   build:
     needs: [detect-changed-files]
+    if: ${{ fromJson(needs.detect-changed-files.outputs.services) != '' }}
     runs-on: ubuntu-latest
 
     strategy:
@@ -83,7 +84,7 @@ jobs:
       - name: Check out code
         uses: actions/checkout@v4
 
-      - name: Cache turbo build setup
+      - name: Cache docker build setup
         uses: actions/cache@v4
         with:
           path: /var/lib/docker
