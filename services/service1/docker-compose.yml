@@ -1,0 +1,28 @@
+version: "3.8"
+
+x-defaults: &defaults
+  init: true
+  tty: true
+  networks:
+    - my_monorepo_network
+
+networks:
+  my_monorepo_network:
+
+services:
+  service1:
+    <<: *defaults
+    container_name: service1-prod
+    ports:
+      - "4000:4000"
+      - "9000:9000"
+    command: npm run start
+    build:
+      args:
+        APP: service1
+        START_COMMAND: start
+      context: ../../
+      dockerfile: ./Dockerfile
+    volumes:
+      - ../../services/service1:/app/services/service1
+      - /app/services/service1/node_modules
